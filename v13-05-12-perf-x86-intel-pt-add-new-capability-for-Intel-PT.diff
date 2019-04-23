@@ -1,0 +1,24 @@
+diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
+index 53e481a..9597ea6 100644
+--- a/arch/x86/events/intel/pt.c
++++ b/arch/x86/events/intel/pt.c
+@@ -68,6 +68,7 @@
+ 	PT_CAP(topa_output,		0, CPUID_ECX, BIT(0)),
+ 	PT_CAP(topa_multiple_entries,	0, CPUID_ECX, BIT(1)),
+ 	PT_CAP(single_range_output,	0, CPUID_ECX, BIT(2)),
++	PT_CAP(output_subsys,		0, CPUID_ECX, BIT(3)),
+ 	PT_CAP(payloads_lip,		0, CPUID_ECX, BIT(31)),
+ 	PT_CAP(num_address_ranges,	1, CPUID_EAX, 0x3),
+ 	PT_CAP(mtc_periods,		1, CPUID_EAX, 0xffff0000),
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index 00f4afb..634f99b 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -16,6 +16,7 @@ enum pt_capabilities {
+ 	PT_CAP_topa_output,
+ 	PT_CAP_topa_multiple_entries,
+ 	PT_CAP_single_range_output,
++	PT_CAP_output_subsys,
+ 	PT_CAP_payloads_lip,
+ 	PT_CAP_num_address_ranges,
+ 	PT_CAP_mtc_periods,

@@ -1,0 +1,2436 @@
+From patchwork Wed Oct 24 08:05:05 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654357
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id C86AB14BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:13 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id B57F62A1DB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:13 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id A83F32A265; Wed, 24 Oct 2018 08:07:13 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI,UPPERCASE_50_75 autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3431C2A1DB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:13 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727604AbeJXQeI (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:08 -0400
+Received: from mga18.intel.com ([134.134.136.126]:4492 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727595AbeJXQeI (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:08 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:05 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987209"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:00 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 01/12] perf/x86/intel/pt: Move Intel PT MSRs bit defines
+ to global header
+Date: Wed, 24 Oct 2018 16:05:05 +0800
+Message-Id: <1540368316-12998-2-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+The Intel Processor Trace (PT) MSR bit defines are in a private
+header. The upcoming support for PT virtualization requires these defines
+to be accessible from KVM code.
+
+Move them to the global MSR header file.
+
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/events/intel/pt.h       | 37 -------------------------------------
+ arch/x86/include/asm/msr-index.h | 33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 37 deletions(-)
+
+diff --git a/arch/x86/events/intel/pt.h b/arch/x86/events/intel/pt.h
+index 0eb41d0..0050ca1 100644
+--- a/arch/x86/events/intel/pt.h
++++ b/arch/x86/events/intel/pt.h
+@@ -20,43 +20,6 @@
+ #define __INTEL_PT_H__
+ 
+ /*
+- * PT MSR bit definitions
+- */
+-#define RTIT_CTL_TRACEEN		BIT(0)
+-#define RTIT_CTL_CYCLEACC		BIT(1)
+-#define RTIT_CTL_OS			BIT(2)
+-#define RTIT_CTL_USR			BIT(3)
+-#define RTIT_CTL_PWR_EVT_EN		BIT(4)
+-#define RTIT_CTL_FUP_ON_PTW		BIT(5)
+-#define RTIT_CTL_CR3EN			BIT(7)
+-#define RTIT_CTL_TOPA			BIT(8)
+-#define RTIT_CTL_MTC_EN			BIT(9)
+-#define RTIT_CTL_TSC_EN			BIT(10)
+-#define RTIT_CTL_DISRETC		BIT(11)
+-#define RTIT_CTL_PTW_EN			BIT(12)
+-#define RTIT_CTL_BRANCH_EN		BIT(13)
+-#define RTIT_CTL_MTC_RANGE_OFFSET	14
+-#define RTIT_CTL_MTC_RANGE		(0x0full << RTIT_CTL_MTC_RANGE_OFFSET)
+-#define RTIT_CTL_CYC_THRESH_OFFSET	19
+-#define RTIT_CTL_CYC_THRESH		(0x0full << RTIT_CTL_CYC_THRESH_OFFSET)
+-#define RTIT_CTL_PSB_FREQ_OFFSET	24
+-#define RTIT_CTL_PSB_FREQ      		(0x0full << RTIT_CTL_PSB_FREQ_OFFSET)
+-#define RTIT_CTL_ADDR0_OFFSET		32
+-#define RTIT_CTL_ADDR0      		(0x0full << RTIT_CTL_ADDR0_OFFSET)
+-#define RTIT_CTL_ADDR1_OFFSET		36
+-#define RTIT_CTL_ADDR1      		(0x0full << RTIT_CTL_ADDR1_OFFSET)
+-#define RTIT_CTL_ADDR2_OFFSET		40
+-#define RTIT_CTL_ADDR2      		(0x0full << RTIT_CTL_ADDR2_OFFSET)
+-#define RTIT_CTL_ADDR3_OFFSET		44
+-#define RTIT_CTL_ADDR3      		(0x0full << RTIT_CTL_ADDR3_OFFSET)
+-#define RTIT_STATUS_FILTEREN		BIT(0)
+-#define RTIT_STATUS_CONTEXTEN		BIT(1)
+-#define RTIT_STATUS_TRIGGEREN		BIT(2)
+-#define RTIT_STATUS_BUFFOVF		BIT(3)
+-#define RTIT_STATUS_ERROR		BIT(4)
+-#define RTIT_STATUS_STOPPED		BIT(5)
+-
+-/*
+  * Single-entry ToPA: when this close to region boundary, switch
+  * buffers to avoid losing data.
+  */
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 4731f0c..d3a9eb9 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -120,7 +120,40 @@
+ #define MSR_PEBS_LD_LAT_THRESHOLD	0x000003f6
+ 
+ #define MSR_IA32_RTIT_CTL		0x00000570
++#define RTIT_CTL_TRACEEN		BIT(0)
++#define RTIT_CTL_CYCLEACC		BIT(1)
++#define RTIT_CTL_OS			BIT(2)
++#define RTIT_CTL_USR			BIT(3)
++#define RTIT_CTL_PWR_EVT_EN		BIT(4)
++#define RTIT_CTL_FUP_ON_PTW		BIT(5)
++#define RTIT_CTL_CR3EN			BIT(7)
++#define RTIT_CTL_TOPA			BIT(8)
++#define RTIT_CTL_MTC_EN			BIT(9)
++#define RTIT_CTL_TSC_EN			BIT(10)
++#define RTIT_CTL_DISRETC		BIT(11)
++#define RTIT_CTL_PTW_EN			BIT(12)
++#define RTIT_CTL_BRANCH_EN		BIT(13)
++#define RTIT_CTL_MTC_RANGE_OFFSET	14
++#define RTIT_CTL_MTC_RANGE		(0x0full << RTIT_CTL_MTC_RANGE_OFFSET)
++#define RTIT_CTL_CYC_THRESH_OFFSET	19
++#define RTIT_CTL_CYC_THRESH		(0x0full << RTIT_CTL_CYC_THRESH_OFFSET)
++#define RTIT_CTL_PSB_FREQ_OFFSET	24
++#define RTIT_CTL_PSB_FREQ		(0x0full << RTIT_CTL_PSB_FREQ_OFFSET)
++#define RTIT_CTL_ADDR0_OFFSET		32
++#define RTIT_CTL_ADDR0			(0x0full << RTIT_CTL_ADDR0_OFFSET)
++#define RTIT_CTL_ADDR1_OFFSET		36
++#define RTIT_CTL_ADDR1			(0x0full << RTIT_CTL_ADDR1_OFFSET)
++#define RTIT_CTL_ADDR2_OFFSET		40
++#define RTIT_CTL_ADDR2			(0x0full << RTIT_CTL_ADDR2_OFFSET)
++#define RTIT_CTL_ADDR3_OFFSET		44
++#define RTIT_CTL_ADDR3			(0x0full << RTIT_CTL_ADDR3_OFFSET)
+ #define MSR_IA32_RTIT_STATUS		0x00000571
++#define RTIT_STATUS_FILTEREN		BIT(0)
++#define RTIT_STATUS_CONTEXTEN		BIT(1)
++#define RTIT_STATUS_TRIGGEREN		BIT(2)
++#define RTIT_STATUS_BUFFOVF		BIT(3)
++#define RTIT_STATUS_ERROR		BIT(4)
++#define RTIT_STATUS_STOPPED		BIT(5)
+ #define MSR_IA32_RTIT_ADDR0_A		0x00000580
+ #define MSR_IA32_RTIT_ADDR0_B		0x00000581
+ #define MSR_IA32_RTIT_ADDR1_A		0x00000582
+
+From patchwork Wed Oct 24 08:05:06 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654359
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 4A79413B5
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:16 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 379E02A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:16 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 2BCD52A2F0; Wed, 24 Oct 2018 08:07:16 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 55C0C2A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:15 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727681AbeJXQeO (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:14 -0400
+Received: from mga12.intel.com ([192.55.52.136]:1899 "EHLO mga12.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727441AbeJXQeO (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:14 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:12 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987265"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:06 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 02/12] perf/x86/intel/pt: Export pt_cap_get()
+Date: Wed, 24 Oct 2018 16:05:06 +0800
+Message-Id: <1540368316-12998-3-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+pt_cap_get() is required by the upcoming PT support in KVM guests.
+
+Export it and move the capabilites enum to a global header.
+
+As a global functions, "pt_*" is already used for ptrace and
+other things, so it makes sense to use "intel_pt_*" as a prefix.
+
+Acked-by: Song Liu <songliubraving@fb.com>
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/events/intel/pt.c      | 49 ++++++++++++++++++++++-------------------
+ arch/x86/events/intel/pt.h      | 21 ------------------
+ arch/x86/include/asm/intel_pt.h | 23 +++++++++++++++++++
+ 3 files changed, 49 insertions(+), 44 deletions(-)
+
+diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
+index 8d016ce..309bb1d 100644
+--- a/arch/x86/events/intel/pt.c
++++ b/arch/x86/events/intel/pt.c
+@@ -75,7 +75,7 @@
+ 	PT_CAP(psb_periods,		1, CPUID_EBX, 0xffff0000),
+ };
+ 
+-static u32 pt_cap_get(enum pt_capabilities cap)
++u32 intel_pt_validate_hw_cap(enum pt_capabilities cap)
+ {
+ 	struct pt_cap_desc *cd = &pt_caps[cap];
+ 	u32 c = pt_pmu.caps[cd->leaf * PT_CPUID_REGS_NUM + cd->reg];
+@@ -83,6 +83,7 @@ static u32 pt_cap_get(enum pt_capabilities cap)
+ 
+ 	return (c & cd->mask) >> shift;
+ }
++EXPORT_SYMBOL_GPL(intel_pt_validate_hw_cap);
+ 
+ static ssize_t pt_cap_show(struct device *cdev,
+ 			   struct device_attribute *attr,
+@@ -92,7 +93,7 @@ static ssize_t pt_cap_show(struct device *cdev,
+ 		container_of(attr, struct dev_ext_attribute, attr);
+ 	enum pt_capabilities cap = (long)ea->var;
+ 
+-	return snprintf(buf, PAGE_SIZE, "%x\n", pt_cap_get(cap));
++	return snprintf(buf, PAGE_SIZE, "%x\n", intel_pt_validate_hw_cap(cap));
+ }
+ 
+ static struct attribute_group pt_cap_group = {
+@@ -310,16 +311,16 @@ static bool pt_event_valid(struct perf_event *event)
+ 		return false;
+ 
+ 	if (config & RTIT_CTL_CYC_PSB) {
+-		if (!pt_cap_get(PT_CAP_psb_cyc))
++		if (!intel_pt_validate_hw_cap(PT_CAP_psb_cyc))
+ 			return false;
+ 
+-		allowed = pt_cap_get(PT_CAP_psb_periods);
++		allowed = intel_pt_validate_hw_cap(PT_CAP_psb_periods);
+ 		requested = (config & RTIT_CTL_PSB_FREQ) >>
+ 			RTIT_CTL_PSB_FREQ_OFFSET;
+ 		if (requested && (!(allowed & BIT(requested))))
+ 			return false;
+ 
+-		allowed = pt_cap_get(PT_CAP_cycle_thresholds);
++		allowed = intel_pt_validate_hw_cap(PT_CAP_cycle_thresholds);
+ 		requested = (config & RTIT_CTL_CYC_THRESH) >>
+ 			RTIT_CTL_CYC_THRESH_OFFSET;
+ 		if (requested && (!(allowed & BIT(requested))))
+@@ -334,10 +335,10 @@ static bool pt_event_valid(struct perf_event *event)
+ 		 * Spec says that setting mtc period bits while mtc bit in
+ 		 * CPUID is 0 will #GP, so better safe than sorry.
+ 		 */
+-		if (!pt_cap_get(PT_CAP_mtc))
++		if (!intel_pt_validate_hw_cap(PT_CAP_mtc))
+ 			return false;
+ 
+-		allowed = pt_cap_get(PT_CAP_mtc_periods);
++		allowed = intel_pt_validate_hw_cap(PT_CAP_mtc_periods);
+ 		if (!allowed)
+ 			return false;
+ 
+@@ -349,11 +350,11 @@ static bool pt_event_valid(struct perf_event *event)
+ 	}
+ 
+ 	if (config & RTIT_CTL_PWR_EVT_EN &&
+-	    !pt_cap_get(PT_CAP_power_event_trace))
++	    !intel_pt_validate_hw_cap(PT_CAP_power_event_trace))
+ 		return false;
+ 
+ 	if (config & RTIT_CTL_PTW) {
+-		if (!pt_cap_get(PT_CAP_ptwrite))
++		if (!intel_pt_validate_hw_cap(PT_CAP_ptwrite))
+ 			return false;
+ 
+ 		/* FUPonPTW without PTW doesn't make sense */
+@@ -598,7 +599,7 @@ static struct topa *topa_alloc(int cpu, gfp_t gfp)
+ 	 * In case of singe-entry ToPA, always put the self-referencing END
+ 	 * link as the 2nd entry in the table
+ 	 */
+-	if (!pt_cap_get(PT_CAP_topa_multiple_entries)) {
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries)) {
+ 		TOPA_ENTRY(topa, 1)->base = topa->phys >> TOPA_SHIFT;
+ 		TOPA_ENTRY(topa, 1)->end = 1;
+ 	}
+@@ -638,7 +639,7 @@ static void topa_insert_table(struct pt_buffer *buf, struct topa *topa)
+ 	topa->offset = last->offset + last->size;
+ 	buf->last = topa;
+ 
+-	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+ 		return;
+ 
+ 	BUG_ON(last->last != TENTS_PER_PAGE - 1);
+@@ -654,7 +655,7 @@ static void topa_insert_table(struct pt_buffer *buf, struct topa *topa)
+ static bool topa_table_full(struct topa *topa)
+ {
+ 	/* single-entry ToPA is a special case */
+-	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+ 		return !!topa->last;
+ 
+ 	return topa->last == TENTS_PER_PAGE - 1;
+@@ -690,7 +691,8 @@ static int topa_insert_pages(struct pt_buffer *buf, gfp_t gfp)
+ 
+ 	TOPA_ENTRY(topa, -1)->base = page_to_phys(p) >> TOPA_SHIFT;
+ 	TOPA_ENTRY(topa, -1)->size = order;
+-	if (!buf->snapshot && !pt_cap_get(PT_CAP_topa_multiple_entries)) {
++	if (!buf->snapshot &&
++	    !intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries)) {
+ 		TOPA_ENTRY(topa, -1)->intr = 1;
+ 		TOPA_ENTRY(topa, -1)->stop = 1;
+ 	}
+@@ -725,7 +727,7 @@ static void pt_topa_dump(struct pt_buffer *buf)
+ 				 topa->table[i].intr ? 'I' : ' ',
+ 				 topa->table[i].stop ? 'S' : ' ',
+ 				 *(u64 *)&topa->table[i]);
+-			if ((pt_cap_get(PT_CAP_topa_multiple_entries) &&
++			if ((intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries) &&
+ 			     topa->table[i].stop) ||
+ 			    topa->table[i].end)
+ 				break;
+@@ -828,7 +830,7 @@ static void pt_handle_status(struct pt *pt)
+ 		 * means we are already losing data; need to let the decoder
+ 		 * know.
+ 		 */
+-		if (!pt_cap_get(PT_CAP_topa_multiple_entries) ||
++		if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries) ||
+ 		    buf->output_off == sizes(TOPA_ENTRY(buf->cur, buf->cur_idx)->size)) {
+ 			perf_aux_output_flag(&pt->handle,
+ 			                     PERF_AUX_FLAG_TRUNCATED);
+@@ -840,7 +842,8 @@ static void pt_handle_status(struct pt *pt)
+ 	 * Also on single-entry ToPA implementations, interrupt will come
+ 	 * before the output reaches its output region's boundary.
+ 	 */
+-	if (!pt_cap_get(PT_CAP_topa_multiple_entries) && !buf->snapshot &&
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries) &&
++	    !buf->snapshot &&
+ 	    pt_buffer_region_size(buf) - buf->output_off <= TOPA_PMI_MARGIN) {
+ 		void *head = pt_buffer_region(buf);
+ 
+@@ -931,7 +934,7 @@ static int pt_buffer_reset_markers(struct pt_buffer *buf,
+ 
+ 
+ 	/* single entry ToPA is handled by marking all regions STOP=1 INT=1 */
+-	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+ 		return 0;
+ 
+ 	/* clear STOP and INT from current entry */
+@@ -1082,7 +1085,7 @@ static int pt_buffer_init_topa(struct pt_buffer *buf, unsigned long nr_pages,
+ 	pt_buffer_setup_topa_index(buf);
+ 
+ 	/* link last table to the first one, unless we're double buffering */
+-	if (pt_cap_get(PT_CAP_topa_multiple_entries)) {
++	if (intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries)) {
+ 		TOPA_ENTRY(buf->last, -1)->base = buf->first->phys >> TOPA_SHIFT;
+ 		TOPA_ENTRY(buf->last, -1)->end = 1;
+ 	}
+@@ -1153,7 +1156,7 @@ static int pt_addr_filters_init(struct perf_event *event)
+ 	struct pt_filters *filters;
+ 	int node = event->cpu == -1 ? -1 : cpu_to_node(event->cpu);
+ 
+-	if (!pt_cap_get(PT_CAP_num_address_ranges))
++	if (!intel_pt_validate_hw_cap(PT_CAP_num_address_ranges))
+ 		return 0;
+ 
+ 	filters = kzalloc_node(sizeof(struct pt_filters), GFP_KERNEL, node);
+@@ -1202,7 +1205,7 @@ static int pt_event_addr_filters_validate(struct list_head *filters)
+ 				return -EINVAL;
+ 		}
+ 
+-		if (++range > pt_cap_get(PT_CAP_num_address_ranges))
++		if (++range > intel_pt_validate_hw_cap(PT_CAP_num_address_ranges))
+ 			return -EOPNOTSUPP;
+ 	}
+ 
+@@ -1507,12 +1510,12 @@ static __init int pt_init(void)
+ 	if (ret)
+ 		return ret;
+ 
+-	if (!pt_cap_get(PT_CAP_topa_output)) {
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_output)) {
+ 		pr_warn("ToPA output is not supported on this CPU\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	if (!pt_cap_get(PT_CAP_topa_multiple_entries))
++	if (!intel_pt_validate_hw_cap(PT_CAP_topa_multiple_entries))
+ 		pt_pmu.pmu.capabilities =
+ 			PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_SW_DOUBLEBUF;
+ 
+@@ -1530,7 +1533,7 @@ static __init int pt_init(void)
+ 	pt_pmu.pmu.addr_filters_sync     = pt_event_addr_filters_sync;
+ 	pt_pmu.pmu.addr_filters_validate = pt_event_addr_filters_validate;
+ 	pt_pmu.pmu.nr_addr_filters       =
+-		pt_cap_get(PT_CAP_num_address_ranges);
++		intel_pt_validate_hw_cap(PT_CAP_num_address_ranges);
+ 
+ 	ret = perf_pmu_register(&pt_pmu.pmu, "intel_pt", -1);
+ 
+diff --git a/arch/x86/events/intel/pt.h b/arch/x86/events/intel/pt.h
+index 0050ca1..269e15a 100644
+--- a/arch/x86/events/intel/pt.h
++++ b/arch/x86/events/intel/pt.h
+@@ -45,30 +45,9 @@ struct topa_entry {
+ 	u64	rsvd4	: 16;
+ };
+ 
+-#define PT_CPUID_LEAVES		2
+-#define PT_CPUID_REGS_NUM	4 /* number of regsters (eax, ebx, ecx, edx) */
+-
+ /* TSC to Core Crystal Clock Ratio */
+ #define CPUID_TSC_LEAF		0x15
+ 
+-enum pt_capabilities {
+-	PT_CAP_max_subleaf = 0,
+-	PT_CAP_cr3_filtering,
+-	PT_CAP_psb_cyc,
+-	PT_CAP_ip_filtering,
+-	PT_CAP_mtc,
+-	PT_CAP_ptwrite,
+-	PT_CAP_power_event_trace,
+-	PT_CAP_topa_output,
+-	PT_CAP_topa_multiple_entries,
+-	PT_CAP_single_range_output,
+-	PT_CAP_payloads_lip,
+-	PT_CAP_num_address_ranges,
+-	PT_CAP_mtc_periods,
+-	PT_CAP_cycle_thresholds,
+-	PT_CAP_psb_periods,
+-};
+-
+ struct pt_pmu {
+ 	struct pmu		pmu;
+ 	u32			caps[PT_CPUID_REGS_NUM * PT_CPUID_LEAVES];
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index b523f51..fa4b4fd 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -2,10 +2,33 @@
+ #ifndef _ASM_X86_INTEL_PT_H
+ #define _ASM_X86_INTEL_PT_H
+ 
++#define PT_CPUID_LEAVES		2
++#define PT_CPUID_REGS_NUM	4 /* number of regsters (eax, ebx, ecx, edx) */
++
++enum pt_capabilities {
++	PT_CAP_max_subleaf = 0,
++	PT_CAP_cr3_filtering,
++	PT_CAP_psb_cyc,
++	PT_CAP_ip_filtering,
++	PT_CAP_mtc,
++	PT_CAP_ptwrite,
++	PT_CAP_power_event_trace,
++	PT_CAP_topa_output,
++	PT_CAP_topa_multiple_entries,
++	PT_CAP_single_range_output,
++	PT_CAP_payloads_lip,
++	PT_CAP_num_address_ranges,
++	PT_CAP_mtc_periods,
++	PT_CAP_cycle_thresholds,
++	PT_CAP_psb_periods,
++};
++
+ #if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_CPU_SUP_INTEL)
+ void cpu_emergency_stop_pt(void);
++extern u32 intel_pt_validate_hw_cap(enum pt_capabilities cap);
+ #else
+ static inline void cpu_emergency_stop_pt(void) {}
++static inline u32 intel_pt_validate_hw_cap(enum pt_capabilities cap) { return 0; }
+ #endif
+ 
+ #endif /* _ASM_X86_INTEL_PT_H */
+
+From patchwork Wed Oct 24 08:05:07 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654361
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id A86BA13B5
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:26 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 97A042A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:26 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 88C972A208; Wed, 24 Oct 2018 08:07:26 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2C6522A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:26 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727694AbeJXQeV (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:21 -0400
+Received: from mga18.intel.com ([134.134.136.126]:4505 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727441AbeJXQeV (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:21 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:18 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987277"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:14 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 03/12] perf/x86/intel/pt: Introduce
+ intel_pt_validate_cap()
+Date: Wed, 24 Oct 2018 16:05:07 +0800
+Message-Id: <1540368316-12998-4-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+intel_pt_validate_hw_cap() validates whether a given PT capability is
+supported by the hardware. It checks the PT capability array which
+reflects the capabilities of the hardware on which the code is executed.
+
+For setting up PT for KVM guests this is not correct as the capability
+array for the guest can be different from the host array.
+
+Provide a new function to check against a given capability array.
+
+Acked-by: Song Liu <songliubraving@fb.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/events/intel/pt.c      | 12 +++++++++---
+ arch/x86/include/asm/intel_pt.h |  2 ++
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
+index 309bb1d..53e481a 100644
+--- a/arch/x86/events/intel/pt.c
++++ b/arch/x86/events/intel/pt.c
+@@ -75,14 +75,20 @@
+ 	PT_CAP(psb_periods,		1, CPUID_EBX, 0xffff0000),
+ };
+ 
+-u32 intel_pt_validate_hw_cap(enum pt_capabilities cap)
++u32 intel_pt_validate_cap(u32 *caps, enum pt_capabilities capability)
+ {
+-	struct pt_cap_desc *cd = &pt_caps[cap];
+-	u32 c = pt_pmu.caps[cd->leaf * PT_CPUID_REGS_NUM + cd->reg];
++	struct pt_cap_desc *cd = &pt_caps[capability];
++	u32 c = caps[cd->leaf * PT_CPUID_REGS_NUM + cd->reg];
+ 	unsigned int shift = __ffs(cd->mask);
+ 
+ 	return (c & cd->mask) >> shift;
+ }
++EXPORT_SYMBOL_GPL(intel_pt_validate_cap);
++
++u32 intel_pt_validate_hw_cap(enum pt_capabilities cap)
++{
++	return intel_pt_validate_cap(pt_pmu.caps, cap);
++}
+ EXPORT_SYMBOL_GPL(intel_pt_validate_hw_cap);
+ 
+ static ssize_t pt_cap_show(struct device *cdev,
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index fa4b4fd..00f4afb 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -26,9 +26,11 @@ enum pt_capabilities {
+ #if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_CPU_SUP_INTEL)
+ void cpu_emergency_stop_pt(void);
+ extern u32 intel_pt_validate_hw_cap(enum pt_capabilities cap);
++extern u32 intel_pt_validate_cap(u32 *caps, enum pt_capabilities cap);
+ #else
+ static inline void cpu_emergency_stop_pt(void) {}
+ static inline u32 intel_pt_validate_hw_cap(enum pt_capabilities cap) { return 0; }
++static inline u32 intel_pt_validate_cap(u32 *caps, enum pt_capabilities capability) { return 0; }
+ #endif
+ 
+ #endif /* _ASM_X86_INTEL_PT_H */
+
+From patchwork Wed Oct 24 08:05:08 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654379
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 9ACF613B5
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:31 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id DA4D229E9B
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:29 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id CDBEC29EC0; Wed, 24 Oct 2018 08:08:29 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 6216729E9B
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:29 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727721AbeJXQe2 (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:28 -0400
+Received: from mga09.intel.com ([134.134.136.24]:23573 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727441AbeJXQe1 (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:27 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:25 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987295"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:20 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 04/12] perf/x86/intel/pt: Add new bit definitions for PT
+ MSRs
+Date: Wed, 24 Oct 2018 16:05:08 +0800
+Message-Id: <1540368316-12998-5-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Add bit definitions for Intel PT MSRs to support trace output
+directed to the memeory subsystem and holds a count if packet
+bytes that have been sent out.
+
+These are required by the upcoming PT support in KVM guests
+for MSRs read/write emulation.
+
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/include/asm/msr-index.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index d3a9eb9..107818e3 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -126,6 +126,7 @@
+ #define RTIT_CTL_USR			BIT(3)
+ #define RTIT_CTL_PWR_EVT_EN		BIT(4)
+ #define RTIT_CTL_FUP_ON_PTW		BIT(5)
++#define RTIT_CTL_FABRIC_EN		BIT(6)
+ #define RTIT_CTL_CR3EN			BIT(7)
+ #define RTIT_CTL_TOPA			BIT(8)
+ #define RTIT_CTL_MTC_EN			BIT(9)
+@@ -154,6 +155,8 @@
+ #define RTIT_STATUS_BUFFOVF		BIT(3)
+ #define RTIT_STATUS_ERROR		BIT(4)
+ #define RTIT_STATUS_STOPPED		BIT(5)
++#define RTIT_STATUS_BYTECNT_OFFSET	32
++#define RTIT_STATUS_BYTECNT		(0x1ffffull << RTIT_STATUS_BYTECNT_OFFSET)
+ #define MSR_IA32_RTIT_ADDR0_A		0x00000580
+ #define MSR_IA32_RTIT_ADDR0_B		0x00000581
+ #define MSR_IA32_RTIT_ADDR1_A		0x00000582
+
+From patchwork Wed Oct 24 08:05:09 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654363
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id CA7E614BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:37 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id B98E22A1DB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:37 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id ADB8D2A265; Wed, 24 Oct 2018 08:07:37 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 5B9CE2A1DB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:37 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727940AbeJXQee (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:34 -0400
+Received: from mga11.intel.com ([192.55.52.93]:61920 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727823AbeJXQed (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:33 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:30 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987311"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:26 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 05/12] perf/x86/intel/pt: add new capability for Intel PT
+Date: Wed, 24 Oct 2018 16:05:09 +0800
+Message-Id: <1540368316-12998-6-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+This adds support for "output to Trace Transport subsystem"
+capability of Intel PT. It means that PT can output its
+trace to an MMIO address range rather than system memory buffer.
+
+Acked-by: Song Liu <songliubraving@fb.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/events/intel/pt.c      | 1 +
+ arch/x86/include/asm/intel_pt.h | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
+index 53e481a..9597ea6 100644
+--- a/arch/x86/events/intel/pt.c
++++ b/arch/x86/events/intel/pt.c
+@@ -68,6 +68,7 @@
+ 	PT_CAP(topa_output,		0, CPUID_ECX, BIT(0)),
+ 	PT_CAP(topa_multiple_entries,	0, CPUID_ECX, BIT(1)),
+ 	PT_CAP(single_range_output,	0, CPUID_ECX, BIT(2)),
++	PT_CAP(output_subsys,		0, CPUID_ECX, BIT(3)),
+ 	PT_CAP(payloads_lip,		0, CPUID_ECX, BIT(31)),
+ 	PT_CAP(num_address_ranges,	1, CPUID_EAX, 0x3),
+ 	PT_CAP(mtc_periods,		1, CPUID_EAX, 0xffff0000),
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index 00f4afb..634f99b 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -16,6 +16,7 @@ enum pt_capabilities {
+ 	PT_CAP_topa_output,
+ 	PT_CAP_topa_multiple_entries,
+ 	PT_CAP_single_range_output,
++	PT_CAP_output_subsys,
+ 	PT_CAP_payloads_lip,
+ 	PT_CAP_num_address_ranges,
+ 	PT_CAP_mtc_periods,
+
+From patchwork Wed Oct 24 08:05:10 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654365
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 09B3914BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:45 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id EB17B2A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:44 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id DF2632A208; Wed, 24 Oct 2018 08:07:44 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 328A42A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:44 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727962AbeJXQek (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:40 -0400
+Received: from mga03.intel.com ([134.134.136.65]:50007 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727826AbeJXQej (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:39 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:37 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987325"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:32 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 06/12] KVM: x86: Add Intel PT virtualization work mode
+Date: Wed, 24 Oct 2018 16:05:10 +0800
+Message-Id: <1540368316-12998-7-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+Intel Processor Trace virtualization can be work in one
+of 2 possible modes:
+
+a. System-Wide mode (default):
+   When the host configures Intel PT to collect trace packets
+   of the entire system, it can leave the relevant VMX controls
+   clear to allow VMX-specific packets to provide information
+   across VMX transitions.
+   KVM guest will not aware this feature in this mode and both
+   host and KVM guest trace will output to host buffer.
+
+b. Host-Guest mode:
+   Host can configure trace-packet generation while in
+   VMX non-root operation for guests and root operation
+   for native executing normally.
+   Intel PT will be exposed to KVM guest in this mode, and
+   the trace output to respective buffer of host and guest.
+   In this mode, tht status of PT will be saved and disabled
+   before VM-entry and restored after VM-exit if trace
+   a virtual machine.
+
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/include/asm/intel_pt.h  |  3 ++
+ arch/x86/include/asm/msr-index.h |  1 +
+ arch/x86/include/asm/vmx.h       |  8 +++++
+ arch/x86/kvm/vmx.c               | 68 +++++++++++++++++++++++++++++++++++++---
+ 4 files changed, 76 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index 634f99b..4727584 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -5,6 +5,9 @@
+ #define PT_CPUID_LEAVES		2
+ #define PT_CPUID_REGS_NUM	4 /* number of regsters (eax, ebx, ecx, edx) */
+ 
++#define PT_MODE_SYSTEM		0
++#define PT_MODE_HOST_GUEST	1
++
+ enum pt_capabilities {
+ 	PT_CAP_max_subleaf = 0,
+ 	PT_CAP_cr3_filtering,
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 107818e3..f51579d 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -805,6 +805,7 @@
+ #define VMX_BASIC_INOUT		0x0040000000000000LLU
+ 
+ /* MSR_IA32_VMX_MISC bits */
++#define MSR_IA32_VMX_MISC_INTEL_PT                 (1ULL << 14)
+ #define MSR_IA32_VMX_MISC_VMWRITE_SHADOW_RO_FIELDS (1ULL << 29)
+ #define MSR_IA32_VMX_MISC_PREEMPTION_TIMER_SCALE   0x1F
+ /* AMD-V MSRs */
+diff --git a/arch/x86/include/asm/vmx.h b/arch/x86/include/asm/vmx.h
+index ade0f15..b99710c 100644
+--- a/arch/x86/include/asm/vmx.h
++++ b/arch/x86/include/asm/vmx.h
+@@ -77,7 +77,9 @@
+ #define SECONDARY_EXEC_ENCLS_EXITING		0x00008000
+ #define SECONDARY_EXEC_RDSEED_EXITING		0x00010000
+ #define SECONDARY_EXEC_ENABLE_PML               0x00020000
++#define SECONDARY_EXEC_PT_CONCEAL_VMX		0x00080000
+ #define SECONDARY_EXEC_XSAVES			0x00100000
++#define SECONDARY_EXEC_PT_USE_GPA		0x01000000
+ #define SECONDARY_EXEC_TSC_SCALING              0x02000000
+ 
+ #define PIN_BASED_EXT_INTR_MASK                 0x00000001
+@@ -98,6 +100,8 @@
+ #define VM_EXIT_LOAD_IA32_EFER                  0x00200000
+ #define VM_EXIT_SAVE_VMX_PREEMPTION_TIMER       0x00400000
+ #define VM_EXIT_CLEAR_BNDCFGS                   0x00800000
++#define VM_EXIT_PT_CONCEAL_PIP			0x01000000
++#define VM_EXIT_CLEAR_IA32_RTIT_CTL		0x02000000
+ 
+ #define VM_EXIT_ALWAYSON_WITHOUT_TRUE_MSR	0x00036dff
+ 
+@@ -109,6 +113,8 @@
+ #define VM_ENTRY_LOAD_IA32_PAT			0x00004000
+ #define VM_ENTRY_LOAD_IA32_EFER                 0x00008000
+ #define VM_ENTRY_LOAD_BNDCFGS                   0x00010000
++#define VM_ENTRY_PT_CONCEAL_PIP			0x00020000
++#define VM_ENTRY_LOAD_IA32_RTIT_CTL		0x00040000
+ 
+ #define VM_ENTRY_ALWAYSON_WITHOUT_TRUE_MSR	0x000011ff
+ 
+@@ -240,6 +246,8 @@ enum vmcs_field {
+ 	GUEST_PDPTR3_HIGH               = 0x00002811,
+ 	GUEST_BNDCFGS                   = 0x00002812,
+ 	GUEST_BNDCFGS_HIGH              = 0x00002813,
++	GUEST_IA32_RTIT_CTL		= 0x00002814,
++	GUEST_IA32_RTIT_CTL_HIGH	= 0x00002815,
+ 	HOST_IA32_PAT			= 0x00002c00,
+ 	HOST_IA32_PAT_HIGH		= 0x00002c01,
+ 	HOST_IA32_EFER			= 0x00002c02,
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 641a65b..c4c4b76 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -55,6 +55,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/spec-ctrl.h>
+ #include <asm/mshyperv.h>
++#include <asm/intel_pt.h>
+ 
+ #include "trace.h"
+ #include "pmu.h"
+@@ -190,6 +191,10 @@
+ static unsigned int ple_window_max        = KVM_VMX_DEFAULT_PLE_WINDOW_MAX;
+ module_param(ple_window_max, uint, 0444);
+ 
++/* Default is SYSTEM mode. */
++static int __read_mostly pt_mode = PT_MODE_SYSTEM;
++module_param(pt_mode, int, S_IRUGO);
++
+ extern const ulong vmx_return;
+ extern const ulong vmx_early_consistency_check_return;
+ 
+@@ -1955,6 +1960,20 @@ static bool vmx_umip_emulated(void)
+ 		SECONDARY_EXEC_DESC;
+ }
+ 
++static inline bool cpu_has_vmx_intel_pt(void)
++{
++	u64 vmx_msr;
++
++	rdmsrl(MSR_IA32_VMX_MISC, vmx_msr);
++	return !!(vmx_msr & MSR_IA32_VMX_MISC_INTEL_PT);
++}
++
++static inline bool cpu_has_vmx_pt_use_gpa(void)
++{
++	return !!(vmcs_config.cpu_based_2nd_exec_ctrl &
++				SECONDARY_EXEC_PT_USE_GPA);
++}
++
+ static inline bool report_flexpriority(void)
+ {
+ 	return flexpriority_enabled;
+@@ -4580,6 +4599,8 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 			SECONDARY_EXEC_RDRAND_EXITING |
+ 			SECONDARY_EXEC_ENABLE_PML |
+ 			SECONDARY_EXEC_TSC_SCALING |
++			SECONDARY_EXEC_PT_USE_GPA |
++			SECONDARY_EXEC_PT_CONCEAL_VMX |
+ 			SECONDARY_EXEC_ENABLE_VMFUNC |
+ 			SECONDARY_EXEC_ENCLS_EXITING;
+ 		if (adjust_vmx_controls(min2, opt2,
+@@ -4625,7 +4646,8 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 	min |= VM_EXIT_HOST_ADDR_SPACE_SIZE;
+ #endif
+ 	opt = VM_EXIT_SAVE_IA32_PAT | VM_EXIT_LOAD_IA32_PAT |
+-		VM_EXIT_CLEAR_BNDCFGS;
++		VM_EXIT_CLEAR_BNDCFGS | VM_EXIT_PT_CONCEAL_PIP |
++		VM_EXIT_CLEAR_IA32_RTIT_CTL;
+ 	if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_EXIT_CTLS,
+ 				&_vmexit_control) < 0)
+ 		return -EIO;
+@@ -4644,11 +4666,20 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 		_pin_based_exec_control &= ~PIN_BASED_POSTED_INTR;
+ 
+ 	min = VM_ENTRY_LOAD_DEBUG_CONTROLS;
+-	opt = VM_ENTRY_LOAD_IA32_PAT | VM_ENTRY_LOAD_BNDCFGS;
++	opt = VM_ENTRY_LOAD_IA32_PAT | VM_ENTRY_LOAD_BNDCFGS |
++		VM_ENTRY_PT_CONCEAL_PIP | VM_ENTRY_LOAD_IA32_RTIT_CTL;
+ 	if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_ENTRY_CTLS,
+ 				&_vmentry_control) < 0)
+ 		return -EIO;
+ 
++	if (!(_cpu_based_2nd_exec_control & SECONDARY_EXEC_PT_USE_GPA) ||
++		!(_vmexit_control & VM_EXIT_CLEAR_IA32_RTIT_CTL) ||
++		!(_vmentry_control & VM_ENTRY_LOAD_IA32_RTIT_CTL)) {
++		_cpu_based_2nd_exec_control &= ~SECONDARY_EXEC_PT_USE_GPA;
++		_vmexit_control &= ~VM_EXIT_CLEAR_IA32_RTIT_CTL;
++		_vmentry_control &= ~VM_ENTRY_LOAD_IA32_RTIT_CTL;
++	}
++
+ 	rdmsr(MSR_IA32_VMX_BASIC, vmx_msr_low, vmx_msr_high);
+ 
+ 	/* IA-32 SDM Vol 3B: VMCS size is never greater than 4kB. */
+@@ -6433,6 +6464,28 @@ static u32 vmx_exec_control(struct vcpu_vmx *vmx)
+ 	return exec_control;
+ }
+ 
++static u32 vmx_vmexit_control(struct vcpu_vmx *vmx)
++{
++	u32 vmexit_control = vmcs_config.vmexit_ctrl;
++
++	if (pt_mode == PT_MODE_SYSTEM)
++		vmexit_control &= ~(VM_EXIT_CLEAR_IA32_RTIT_CTL |
++				    VM_EXIT_PT_CONCEAL_PIP);
++
++	return vmexit_control;
++}
++
++static u32 vmx_vmentry_control(struct vcpu_vmx *vmx)
++{
++	u32 vmentry_control = vmcs_config.vmentry_ctrl;
++
++	if (pt_mode == PT_MODE_SYSTEM)
++		vmentry_control &= ~(VM_ENTRY_PT_CONCEAL_PIP |
++				     VM_ENTRY_LOAD_IA32_RTIT_CTL);
++
++	return vmentry_control;
++}
++
+ static bool vmx_rdrand_supported(void)
+ {
+ 	return vmcs_config.cpu_based_2nd_exec_ctrl &
+@@ -6567,6 +6620,10 @@ static void vmx_compute_secondary_exec_control(struct vcpu_vmx *vmx)
+ 		}
+ 	}
+ 
++	if (pt_mode == PT_MODE_SYSTEM)
++		exec_control &= ~(SECONDARY_EXEC_PT_USE_GPA |
++				  SECONDARY_EXEC_PT_CONCEAL_VMX);
++
+ 	vmx->secondary_exec_control = exec_control;
+ }
+ 
+@@ -6672,10 +6729,10 @@ static void vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 
+ 	vmx->arch_capabilities = kvm_get_arch_capabilities();
+ 
+-	vm_exit_controls_init(vmx, vmcs_config.vmexit_ctrl);
++	vm_exit_controls_init(vmx, vmx_vmexit_control(vmx));
+ 
+ 	/* 22.2.1, 20.8.1 */
+-	vm_entry_controls_init(vmx, vmcs_config.vmentry_ctrl);
++	vm_entry_controls_init(vmx, vmx_vmentry_control(vmx));
+ 
+ 	vmx->vcpu.arch.cr0_guest_owned_bits = X86_CR0_TS;
+ 	vmcs_writel(CR0_GUEST_HOST_MASK, ~X86_CR0_TS);
+@@ -8018,6 +8075,9 @@ static __init int hardware_setup(void)
+ 
+ 	kvm_mce_cap_supported |= MCG_LMCE_P;
+ 
++	if (!enable_ept || !cpu_has_vmx_intel_pt() || !cpu_has_vmx_pt_use_gpa())
++		pt_mode = PT_MODE_SYSTEM;
++
+ 	return alloc_kvm_area();
+ 
+ out:
+
+From patchwork Wed Oct 24 08:05:11 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654367
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id EF0AC13B5
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:49 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id DC9542A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:49 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id CF7362A208; Wed, 24 Oct 2018 08:07:49 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 5BE872A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:49 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1728004AbeJXQer (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:47 -0400
+Received: from mga04.intel.com ([192.55.52.120]:9973 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727826AbeJXQer (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:47 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:44 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987347"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:38 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 07/12] KVM: x86: Add Intel Processor Trace cpuid emulation
+Date: Wed, 24 Oct 2018 16:05:11 +0800
+Message-Id: <1540368316-12998-8-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+Expose Intel Processor Trace to guest only when
+the PT works in Host-Guest mode.
+
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/include/asm/kvm_host.h |  1 +
+ arch/x86/kvm/cpuid.c            | 22 ++++++++++++++++++++--
+ arch/x86/kvm/svm.c              |  6 ++++++
+ arch/x86/kvm/vmx.c              |  6 ++++++
+ 4 files changed, 33 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 55e51ff..9ab7ac0 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1105,6 +1105,7 @@ struct kvm_x86_ops {
+ 	bool (*mpx_supported)(void);
+ 	bool (*xsaves_supported)(void);
+ 	bool (*umip_emulated)(void);
++	bool (*pt_supported)(void);
+ 
+ 	int (*check_nested_events)(struct kvm_vcpu *vcpu, bool external_intr);
+ 	void (*request_immediate_exit)(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
+index 7bcfa61..05b8fb4 100644
+--- a/arch/x86/kvm/cpuid.c
++++ b/arch/x86/kvm/cpuid.c
+@@ -337,6 +337,7 @@ static inline int __do_cpuid_ent(struct kvm_cpuid_entry2 *entry, u32 function,
+ 	unsigned f_mpx = kvm_mpx_supported() ? F(MPX) : 0;
+ 	unsigned f_xsaves = kvm_x86_ops->xsaves_supported() ? F(XSAVES) : 0;
+ 	unsigned f_umip = kvm_x86_ops->umip_emulated() ? F(UMIP) : 0;
++	unsigned f_intel_pt = kvm_x86_ops->pt_supported() ? F(INTEL_PT) : 0;
+ 
+ 	/* cpuid 1.edx */
+ 	const u32 kvm_cpuid_1_edx_x86_features =
+@@ -395,7 +396,7 @@ static inline int __do_cpuid_ent(struct kvm_cpuid_entry2 *entry, u32 function,
+ 		F(BMI2) | F(ERMS) | f_invpcid | F(RTM) | f_mpx | F(RDSEED) |
+ 		F(ADX) | F(SMAP) | F(AVX512IFMA) | F(AVX512F) | F(AVX512PF) |
+ 		F(AVX512ER) | F(AVX512CD) | F(CLFLUSHOPT) | F(CLWB) | F(AVX512DQ) |
+-		F(SHA_NI) | F(AVX512BW) | F(AVX512VL);
++		F(SHA_NI) | F(AVX512BW) | F(AVX512VL) | f_intel_pt;
+ 
+ 	/* cpuid 0xD.1.eax */
+ 	const u32 kvm_cpuid_D_1_eax_x86_features =
+@@ -426,7 +427,7 @@ static inline int __do_cpuid_ent(struct kvm_cpuid_entry2 *entry, u32 function,
+ 
+ 	switch (function) {
+ 	case 0:
+-		entry->eax = min(entry->eax, (u32)0xd);
++		entry->eax = min(entry->eax, (u32)(f_intel_pt ? 0x14 : 0xd));
+ 		break;
+ 	case 1:
+ 		entry->edx &= kvm_cpuid_1_edx_x86_features;
+@@ -603,6 +604,23 @@ static inline int __do_cpuid_ent(struct kvm_cpuid_entry2 *entry, u32 function,
+ 		}
+ 		break;
+ 	}
++	/* Intel PT */
++	case 0x14: {
++		int t, times = entry->eax;
++
++		if (!f_intel_pt)
++			break;
++
++		entry->flags |= KVM_CPUID_FLAG_SIGNIFCANT_INDEX;
++		for (t = 1; t <= times; ++t) {
++			if (*nent >= maxnent)
++				goto out;
++			do_cpuid_1_ent(&entry[t], function, t);
++			entry[t].flags |= KVM_CPUID_FLAG_SIGNIFCANT_INDEX;
++			++*nent;
++		}
++		break;
++	}
+ 	case KVM_CPUID_SIGNATURE: {
+ 		static const char signature[12] = "KVMKVMKVM\0\0";
+ 		const u32 *sigptr = (const u32 *)signature;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index f416f5c7..6e8a61b 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -5904,6 +5904,11 @@ static bool svm_umip_emulated(void)
+ 	return false;
+ }
+ 
++static bool svm_pt_supported(void)
++{
++	return false;
++}
++
+ static bool svm_has_wbinvd_exit(void)
+ {
+ 	return true;
+@@ -7139,6 +7144,7 @@ static int nested_enable_evmcs(struct kvm_vcpu *vcpu,
+ 	.mpx_supported = svm_mpx_supported,
+ 	.xsaves_supported = svm_xsaves_supported,
+ 	.umip_emulated = svm_umip_emulated,
++	.pt_supported = svm_pt_supported,
+ 
+ 	.set_supported_cpuid = svm_set_supported_cpuid,
+ 
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index c4c4b76..692154c 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -11013,6 +11013,11 @@ static bool vmx_xsaves_supported(void)
+ 		SECONDARY_EXEC_XSAVES;
+ }
+ 
++static bool vmx_pt_supported(void)
++{
++	return (pt_mode == PT_MODE_HOST_GUEST);
++}
++
+ static void vmx_recover_nmi_blocking(struct vcpu_vmx *vmx)
+ {
+ 	u32 exit_intr_info;
+@@ -15127,6 +15132,7 @@ static int vmx_set_nested_state(struct kvm_vcpu *vcpu,
+ 	.mpx_supported = vmx_mpx_supported,
+ 	.xsaves_supported = vmx_xsaves_supported,
+ 	.umip_emulated = vmx_umip_emulated,
++	.pt_supported = vmx_pt_supported,
+ 
+ 	.check_nested_events = vmx_check_nested_events,
+ 	.request_immediate_exit = vmx_request_immediate_exit,
+
+From patchwork Wed Oct 24 08:05:12 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654369
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 002A614BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:58 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id DE5AA2A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:57 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id CFBF52A208; Wed, 24 Oct 2018 08:07:57 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 4DC642A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:07:57 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1728015AbeJXQex (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:34:53 -0400
+Received: from mga17.intel.com ([192.55.52.151]:28654 "EHLO mga17.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727981AbeJXQew (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:52 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:50 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987383"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:45 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 08/12] KVM: x86: Add Intel PT context switch for each vcpu
+Date: Wed, 24 Oct 2018 16:05:12 +0800
+Message-Id: <1540368316-12998-9-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+Load/Store Intel Processor Trace register in context switch.
+MSR IA32_RTIT_CTL is loaded/stored automatically from VMCS.
+In Host-Guest mode, we need load/resore PT MSRs only when PT
+is enabled in guest.
+
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/include/asm/intel_pt.h |  2 +
+ arch/x86/kvm/vmx.c              | 94 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 96 insertions(+)
+
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index 4727584..eabbdbc 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -8,6 +8,8 @@
+ #define PT_MODE_SYSTEM		0
+ #define PT_MODE_HOST_GUEST	1
+ 
++#define RTIT_ADDR_RANGE		4
++
+ enum pt_capabilities {
+ 	PT_CAP_max_subleaf = 0,
+ 	PT_CAP_cr3_filtering,
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 692154c..d8480a6 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -978,6 +978,24 @@ struct vmx_msrs {
+ 	struct vmx_msr_entry	val[NR_AUTOLOAD_MSRS];
+ };
+ 
++struct pt_ctx {
++	u64 ctl;
++	u64 status;
++	u64 output_base;
++	u64 output_mask;
++	u64 cr3_match;
++	u64 addr_a[RTIT_ADDR_RANGE];
++	u64 addr_b[RTIT_ADDR_RANGE];
++};
++
++struct pt_desc {
++	u64 ctl_bitmask;
++	u32 addr_range;
++	u32 caps[PT_CPUID_REGS_NUM * PT_CPUID_LEAVES];
++	struct pt_ctx host;
++	struct pt_ctx guest;
++};
++
+ struct vcpu_vmx {
+ 	struct kvm_vcpu       vcpu;
+ 	unsigned long         host_rsp;
+@@ -1071,6 +1089,8 @@ struct vcpu_vmx {
+ 	u64 msr_ia32_feature_control;
+ 	u64 msr_ia32_feature_control_valid_bits;
+ 	u64 ept_pointer;
++
++	struct pt_desc pt_desc;
+ };
+ 
+ enum segment_cache_field {
+@@ -2899,6 +2919,69 @@ static unsigned long segment_base(u16 selector)
+ }
+ #endif
+ 
++static inline void pt_load_msr(struct pt_ctx *ctx, u32 addr_range)
++{
++	u32 i;
++
++	wrmsrl(MSR_IA32_RTIT_STATUS, ctx->status);
++	wrmsrl(MSR_IA32_RTIT_OUTPUT_BASE, ctx->output_base);
++	wrmsrl(MSR_IA32_RTIT_OUTPUT_MASK, ctx->output_mask);
++	wrmsrl(MSR_IA32_RTIT_CR3_MATCH, ctx->cr3_match);
++	for (i = 0; i < addr_range; i++) {
++		wrmsrl(MSR_IA32_RTIT_ADDR0_A + i * 2, ctx->addr_a[i]);
++		wrmsrl(MSR_IA32_RTIT_ADDR0_B + i * 2, ctx->addr_b[i]);
++	}
++}
++
++static inline void pt_save_msr(struct pt_ctx *ctx, u32 addr_range)
++{
++	u32 i;
++
++	rdmsrl(MSR_IA32_RTIT_STATUS, ctx->status);
++	rdmsrl(MSR_IA32_RTIT_OUTPUT_BASE, ctx->output_base);
++	rdmsrl(MSR_IA32_RTIT_OUTPUT_MASK, ctx->output_mask);
++	rdmsrl(MSR_IA32_RTIT_CR3_MATCH, ctx->cr3_match);
++	for (i = 0; i < addr_range; i++) {
++		rdmsrl(MSR_IA32_RTIT_ADDR0_A + i * 2, ctx->addr_a[i]);
++		rdmsrl(MSR_IA32_RTIT_ADDR0_B + i * 2, ctx->addr_b[i]);
++	}
++}
++
++static void pt_guest_enter(struct vcpu_vmx *vmx)
++{
++	if (pt_mode == PT_MODE_SYSTEM)
++		return;
++
++	/* Save host state before VM entry */
++	rdmsrl(MSR_IA32_RTIT_CTL, vmx->pt_desc.host.ctl);
++
++	/*
++	 * Set guest state of MSR_IA32_RTIT_CTL MSR (PT will be disabled
++	 * on VM entry when it has been disabled in guest before).
++	 */
++	vmcs_write64(GUEST_IA32_RTIT_CTL, vmx->pt_desc.guest.ctl);
++
++	if (vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) {
++		wrmsrl(MSR_IA32_RTIT_CTL, 0);
++		pt_save_msr(&vmx->pt_desc.host, vmx->pt_desc.addr_range);
++		pt_load_msr(&vmx->pt_desc.guest, vmx->pt_desc.addr_range);
++	}
++}
++
++static void pt_guest_exit(struct vcpu_vmx *vmx)
++{
++	if (pt_mode == PT_MODE_SYSTEM)
++		return;
++
++	if (vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) {
++		pt_save_msr(&vmx->pt_desc.guest, vmx->pt_desc.addr_range);
++		pt_load_msr(&vmx->pt_desc.host, vmx->pt_desc.addr_range);
++	}
++
++	/* Reload host state (IA32_RTIT_CTL will be cleared on VM exit). */
++	wrmsrl(MSR_IA32_RTIT_CTL, vmx->pt_desc.host.ctl);
++}
++
+ static void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+@@ -6749,6 +6832,13 @@ static void vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 
+ 	if (cpu_has_vmx_encls_vmexit())
+ 		vmcs_write64(ENCLS_EXITING_BITMAP, -1ull);
++
++	if (pt_mode == PT_MODE_HOST_GUEST) {
++		memset(&vmx->pt_desc, 0, sizeof(vmx->pt_desc));
++		/* Bit[6~0] are forced to 1, writes are ignored. */
++		vmx->pt_desc.guest.output_mask = 0x7F;
++		vmcs_write64(GUEST_IA32_RTIT_CTL, 0);
++	}
+ }
+ 
+ static void vmx_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
+@@ -11260,6 +11350,8 @@ static void __noclone vmx_vcpu_run(struct kvm_vcpu *vcpu)
+ 	    vcpu->arch.pkru != vmx->host_pkru)
+ 		__write_pkru(vcpu->arch.pkru);
+ 
++	pt_guest_enter(vmx);
++
+ 	atomic_switch_perf_msrs(vmx);
+ 
+ 	vmx_update_hv_timer(vcpu);
+@@ -11459,6 +11551,8 @@ static void __noclone vmx_vcpu_run(struct kvm_vcpu *vcpu)
+ 				  | (1 << VCPU_EXREG_CR3));
+ 	vcpu->arch.regs_dirty = 0;
+ 
++	pt_guest_exit(vmx);
++
+ 	/*
+ 	 * eager fpu is enabled if PKEY is supported and CR4 is switched
+ 	 * back on host, so it is safe to read guest PKRU from current
+
+From patchwork Wed Oct 24 08:05:13 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654377
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 12C3714BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:24 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 00C4929E9A
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:24 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id E842429EAF; Wed, 24 Oct 2018 08:08:23 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 7EF6229E9A
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:23 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1728150AbeJXQfA (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:35:00 -0400
+Received: from mga04.intel.com ([192.55.52.120]:9992 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727981AbeJXQe7 (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:34:59 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:07:57 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987411"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:51 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 09/12] KVM: x86: Introduce a function to initialize the PT
+ configuration
+Date: Wed, 24 Oct 2018 16:05:13 +0800
+Message-Id: <1540368316-12998-10-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Initialize the Intel PT configuration when cpuid update.
+Include cpuid inforamtion, rtit_ctl bit mask and the number of
+address ranges.
+
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/kvm/vmx.c | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
+
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index d8480a6..2697618 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -11921,6 +11921,75 @@ static void nested_vmx_entry_exit_ctls_update(struct kvm_vcpu *vcpu)
+ 	}
+ }
+ 
++static void update_intel_pt_cfg(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	struct kvm_cpuid_entry2 *best = NULL;
++	int i;
++
++	for (i = 0; i < PT_CPUID_LEAVES; i++) {
++		best = kvm_find_cpuid_entry(vcpu, 0x14, i);
++		if (!best)
++			return;
++		vmx->pt_desc.caps[CPUID_EAX + i*PT_CPUID_REGS_NUM] = best->eax;
++		vmx->pt_desc.caps[CPUID_EBX + i*PT_CPUID_REGS_NUM] = best->ebx;
++		vmx->pt_desc.caps[CPUID_ECX + i*PT_CPUID_REGS_NUM] = best->ecx;
++		vmx->pt_desc.caps[CPUID_EDX + i*PT_CPUID_REGS_NUM] = best->edx;
++	}
++
++	/* Get the number of configurable Address Ranges for filtering */
++	vmx->pt_desc.addr_range = intel_pt_validate_cap(vmx->pt_desc.caps,
++						PT_CAP_num_address_ranges);
++
++	/* Initialize and clear the no dependency bits */
++	vmx->pt_desc.ctl_bitmask = ~(RTIT_CTL_TRACEEN | RTIT_CTL_OS |
++			RTIT_CTL_USR | RTIT_CTL_TSC_EN | RTIT_CTL_DISRETC);
++
++	/*
++	 * If CPUID.(EAX=14H,ECX=0):EBX[0]=1 CR3Filter can be set otherwise
++	 * will inject an #GP
++	 */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_cr3_filtering))
++		vmx->pt_desc.ctl_bitmask &= ~RTIT_CTL_CR3EN;
++
++	/*
++	 * If CPUID.(EAX=14H,ECX=0):EBX[1]=1 CYCEn, CycThresh and
++	 * PSBFreq can be set
++	 */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_psb_cyc))
++		vmx->pt_desc.ctl_bitmask &= ~(RTIT_CTL_CYCLEACC |
++				RTIT_CTL_CYC_THRESH | RTIT_CTL_PSB_FREQ);
++
++	/*
++	 * If CPUID.(EAX=14H,ECX=0):EBX[3]=1 MTCEn BranchEn and
++	 * MTCFreq can be set
++	 */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_mtc))
++		vmx->pt_desc.ctl_bitmask &= ~(RTIT_CTL_MTC_EN |
++				RTIT_CTL_BRANCH_EN | RTIT_CTL_MTC_RANGE);
++
++	/* If CPUID.(EAX=14H,ECX=0):EBX[4]=1 FUPonPTW and PTWEn can be set */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_ptwrite))
++		vmx->pt_desc.ctl_bitmask &= ~(RTIT_CTL_FUP_ON_PTW |
++							RTIT_CTL_PTW_EN);
++
++	/* If CPUID.(EAX=14H,ECX=0):EBX[5]=1 PwrEvEn can be set */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_power_event_trace))
++		vmx->pt_desc.ctl_bitmask &= ~RTIT_CTL_PWR_EVT_EN;
++
++	/* If CPUID.(EAX=14H,ECX=0):ECX[0]=1 ToPA can be set */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_topa_output))
++		vmx->pt_desc.ctl_bitmask &= ~RTIT_CTL_TOPA;
++
++	/* If CPUID.(EAX=14H,ECX=0):ECX[3]=1 FabircEn can be set */
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_output_subsys))
++		vmx->pt_desc.ctl_bitmask &= ~RTIT_CTL_FABRIC_EN;
++
++	/* unmask address range configure area */
++	for (i = 0; i < vmx->pt_desc.addr_range; i++)
++		vmx->pt_desc.ctl_bitmask &= ~(0xf << (32 + i * 4));
++}
++
+ static void vmx_cpuid_update(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+@@ -11941,6 +12010,10 @@ static void vmx_cpuid_update(struct kvm_vcpu *vcpu)
+ 		nested_vmx_cr_fixed1_bits_update(vcpu);
+ 		nested_vmx_entry_exit_ctls_update(vcpu);
+ 	}
++
++	if (boot_cpu_has(X86_FEATURE_INTEL_PT) &&
++			guest_cpuid_has(vcpu, X86_FEATURE_INTEL_PT))
++		update_intel_pt_cfg(vcpu);
+ }
+ 
+ static void vmx_set_supported_cpuid(u32 func, struct kvm_cpuid_entry2 *entry)
+
+From patchwork Wed Oct 24 08:05:14 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654371
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 01FF514BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:09 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id DD7312A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:08 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id CFD4F2A208; Wed, 24 Oct 2018 08:08:08 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 0F5F12A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:08 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1729123AbeJXQfF (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:35:05 -0400
+Received: from mga12.intel.com ([192.55.52.136]:1960 "EHLO mga12.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728013AbeJXQfE (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:35:04 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:08:02 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987450"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:07:57 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 10/12] KVM: x86: Implement Intel PT MSRs read/write
+ emulation
+Date: Wed, 24 Oct 2018 16:05:14 +0800
+Message-Id: <1540368316-12998-11-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+This patch implement Intel Processor Trace MSRs read/write
+emulation.
+Intel PT MSRs read/write need to be emulated when Intel PT
+MSRs is intercepted in guest and during live migration.
+
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/include/asm/intel_pt.h |   8 ++
+ arch/x86/kvm/vmx.c              | 176 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kvm/x86.c              |  33 +++++++-
+ 3 files changed, 216 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/include/asm/intel_pt.h b/arch/x86/include/asm/intel_pt.h
+index eabbdbc..a1c2080 100644
+--- a/arch/x86/include/asm/intel_pt.h
++++ b/arch/x86/include/asm/intel_pt.h
+@@ -10,6 +10,14 @@
+ 
+ #define RTIT_ADDR_RANGE		4
+ 
++#define MSR_IA32_RTIT_STATUS_MASK (~(RTIT_STATUS_FILTEREN | \
++		RTIT_STATUS_CONTEXTEN | RTIT_STATUS_TRIGGEREN | \
++		RTIT_STATUS_ERROR | RTIT_STATUS_STOPPED | \
++		RTIT_STATUS_BYTECNT))
++
++#define MSR_IA32_RTIT_OUTPUT_BASE_MASK \
++		(~((1UL << cpuid_query_maxphyaddr(vcpu)) - 1) | 0x7f)
++
+ enum pt_capabilities {
+ 	PT_CAP_max_subleaf = 0,
+ 	PT_CAP_cr3_filtering,
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 2697618..a568d49 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -3350,6 +3350,79 @@ static void vmx_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
+ 		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO, interruptibility);
+ }
+ 
++static int vmx_rtit_ctl_check(struct kvm_vcpu *vcpu, u64 data)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	unsigned long value;
++
++	/*
++	 * Any MSR write that attempts to change bits marked reserved will
++	 * case a #GP fault.
++	 */
++	if (data & vmx->pt_desc.ctl_bitmask)
++		return 1;
++
++	/*
++	 * Any attempt to modify IA32_RTIT_CTL while TraceEn is set will
++	 * result in a #GP unless the same write also clears TraceEn.
++	 */
++	if ((vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) &&
++		((vmx->pt_desc.guest.ctl ^ data) & ~RTIT_CTL_TRACEEN))
++		return 1;
++
++	/*
++	 * WRMSR to IA32_RTIT_CTL that sets TraceEn but clears this bit
++	 * and FabricEn would cause #GP, if
++	 * CPUID.(EAX=14H, ECX=0):ECX.SNGLRGNOUT[bit 2] = 0
++	 */
++	if ((data & RTIT_CTL_TRACEEN) && !(data & RTIT_CTL_TOPA) &&
++		!(data & RTIT_CTL_FABRIC_EN) &&
++		!intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_single_range_output))
++		return 1;
++
++	/*
++	 * MTCFreq, CycThresh and PSBFreq encodings check, any MSR write that
++	 * utilize encodings marked reserved will casue a #GP fault.
++	 */
++	value = intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_mtc_periods);
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_mtc) &&
++			!test_bit((data & RTIT_CTL_MTC_RANGE) >>
++			RTIT_CTL_MTC_RANGE_OFFSET, &value))
++		return 1;
++	value = intel_pt_validate_cap(vmx->pt_desc.caps,
++						PT_CAP_cycle_thresholds);
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_psb_cyc) &&
++			!test_bit((data & RTIT_CTL_CYC_THRESH) >>
++			RTIT_CTL_CYC_THRESH_OFFSET, &value))
++		return 1;
++	value = intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_psb_periods);
++	if (intel_pt_validate_cap(vmx->pt_desc.caps, PT_CAP_psb_cyc) &&
++			!test_bit((data & RTIT_CTL_PSB_FREQ) >>
++			RTIT_CTL_PSB_FREQ_OFFSET, &value))
++		return 1;
++
++	/*
++	 * If ADDRx_CFG is reserved or the encodings is >2 will
++	 * cause a #GP fault.
++	 */
++	value = (data & RTIT_CTL_ADDR0) >> RTIT_CTL_ADDR0_OFFSET;
++	if ((value && (vmx->pt_desc.addr_range < 1)) || (value > 2))
++		return 1;
++	value = (data & RTIT_CTL_ADDR1) >> RTIT_CTL_ADDR1_OFFSET;
++	if ((value && (vmx->pt_desc.addr_range < 2)) || (value > 2))
++		return 1;
++	value = (data & RTIT_CTL_ADDR2) >> RTIT_CTL_ADDR2_OFFSET;
++	if ((value && (vmx->pt_desc.addr_range < 3)) || (value > 2))
++		return 1;
++	value = (data & RTIT_CTL_ADDR3) >> RTIT_CTL_ADDR3_OFFSET;
++	if ((value && (vmx->pt_desc.addr_range < 4)) || (value > 2))
++		return 1;
++
++	return 0;
++}
++
++
+ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long rip;
+@@ -4186,6 +4259,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ 	struct shared_msr_entry *msr;
++	u32 index;
+ 
+ 	switch (msr_info->index) {
+ #ifdef CONFIG_X86_64
+@@ -4250,6 +4324,52 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 			return 1;
+ 		msr_info->data = vcpu->arch.ia32_xss;
+ 		break;
++	case MSR_IA32_RTIT_CTL:
++		if (pt_mode != PT_MODE_HOST_GUEST)
++			return 1;
++		msr_info->data = vmx->pt_desc.guest.ctl;
++		break;
++	case MSR_IA32_RTIT_STATUS:
++		if (pt_mode != PT_MODE_HOST_GUEST)
++			return 1;
++		msr_info->data = vmx->pt_desc.guest.status;
++		break;
++	case MSR_IA32_RTIT_CR3_MATCH:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			!intel_pt_validate_cap(vmx->pt_desc.caps,
++						PT_CAP_cr3_filtering))
++			return 1;
++		msr_info->data = vmx->pt_desc.guest.cr3_match;
++		break;
++	case MSR_IA32_RTIT_OUTPUT_BASE:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(!intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_topa_output) &&
++			 !intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_single_range_output)))
++			return 1;
++		msr_info->data = vmx->pt_desc.guest.output_base;
++		break;
++	case MSR_IA32_RTIT_OUTPUT_MASK:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(!intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_topa_output) &&
++			 !intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_single_range_output)))
++			return 1;
++		msr_info->data = vmx->pt_desc.guest.output_mask;
++		break;
++	case MSR_IA32_RTIT_ADDR0_A ... MSR_IA32_RTIT_ADDR3_B:
++		index = msr_info->index - MSR_IA32_RTIT_ADDR0_A;
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(index >= 2 * intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_num_address_ranges)))
++			return 1;
++		if (index % 2)
++			msr_info->data = vmx->pt_desc.guest.addr_b[index / 2];
++		else
++			msr_info->data = vmx->pt_desc.guest.addr_a[index / 2];
++		break;
+ 	case MSR_TSC_AUX:
+ 		if (!msr_info->host_initiated &&
+ 		    !guest_cpuid_has(vcpu, X86_FEATURE_RDTSCP))
+@@ -4281,6 +4401,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 	int ret = 0;
+ 	u32 msr_index = msr_info->index;
+ 	u64 data = msr_info->data;
++	u32 index;
+ 
+ 	switch (msr_index) {
+ 	case MSR_EFER:
+@@ -4432,6 +4553,61 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 		else
+ 			clear_atomic_switch_msr(vmx, MSR_IA32_XSS);
+ 		break;
++	case MSR_IA32_RTIT_CTL:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			vmx_rtit_ctl_check(vcpu, data))
++			return 1;
++		vmcs_write64(GUEST_IA32_RTIT_CTL, data);
++		vmx->pt_desc.guest.ctl = data;
++		break;
++	case MSR_IA32_RTIT_STATUS:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) ||
++			(data & MSR_IA32_RTIT_STATUS_MASK))
++			return 1;
++		vmx->pt_desc.guest.status = data;
++		break;
++	case MSR_IA32_RTIT_CR3_MATCH:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) ||
++			!intel_pt_validate_cap(vmx->pt_desc.caps,
++						PT_CAP_cr3_filtering))
++			return 1;
++		vmx->pt_desc.guest.cr3_match = data;
++		break;
++	case MSR_IA32_RTIT_OUTPUT_BASE:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) ||
++			(!intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_topa_output) &&
++			 !intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_single_range_output)) ||
++			(data & MSR_IA32_RTIT_OUTPUT_BASE_MASK))
++			return 1;
++		vmx->pt_desc.guest.output_base = data;
++		break;
++	case MSR_IA32_RTIT_OUTPUT_MASK:
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) ||
++			(!intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_topa_output) &&
++			 !intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_single_range_output)))
++			return 1;
++		vmx->pt_desc.guest.output_mask = data;
++		break;
++	case MSR_IA32_RTIT_ADDR0_A ... MSR_IA32_RTIT_ADDR3_B:
++		index = msr_info->index - MSR_IA32_RTIT_ADDR0_A;
++		if ((pt_mode != PT_MODE_HOST_GUEST) ||
++			(vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) ||
++			(index >= 2 * intel_pt_validate_cap(vmx->pt_desc.caps,
++					PT_CAP_num_address_ranges)))
++			return 1;
++		if (index % 2)
++			vmx->pt_desc.guest.addr_b[index / 2] = data;
++		else
++			vmx->pt_desc.guest.addr_a[index / 2] = data;
++		break;
+ 	case MSR_TSC_AUX:
+ 		if (!msr_info->host_initiated &&
+ 		    !guest_cpuid_has(vcpu, X86_FEATURE_RDTSCP))
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 66d66d7..603c92a 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -69,6 +69,7 @@
+ #include <asm/irq_remapping.h>
+ #include <asm/mshyperv.h>
+ #include <asm/hypervisor.h>
++#include <asm/intel_pt.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include "trace.h"
+@@ -1121,7 +1122,13 @@ bool kvm_rdpmc(struct kvm_vcpu *vcpu)
+ #endif
+ 	MSR_IA32_TSC, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA,
+ 	MSR_IA32_FEATURE_CONTROL, MSR_IA32_BNDCFGS, MSR_TSC_AUX,
+-	MSR_IA32_SPEC_CTRL, MSR_IA32_ARCH_CAPABILITIES
++	MSR_IA32_SPEC_CTRL, MSR_IA32_ARCH_CAPABILITIES,
++	MSR_IA32_RTIT_CTL, MSR_IA32_RTIT_STATUS, MSR_IA32_RTIT_CR3_MATCH,
++	MSR_IA32_RTIT_OUTPUT_BASE, MSR_IA32_RTIT_OUTPUT_MASK,
++	MSR_IA32_RTIT_ADDR0_A, MSR_IA32_RTIT_ADDR0_B,
++	MSR_IA32_RTIT_ADDR1_A, MSR_IA32_RTIT_ADDR1_B,
++	MSR_IA32_RTIT_ADDR2_A, MSR_IA32_RTIT_ADDR2_B,
++	MSR_IA32_RTIT_ADDR3_A, MSR_IA32_RTIT_ADDR3_B,
+ };
+ 
+ static unsigned num_msrs_to_save;
+@@ -4842,6 +4849,30 @@ static void kvm_init_msr_list(void)
+ 			if (!kvm_x86_ops->rdtscp_supported())
+ 				continue;
+ 			break;
++		case MSR_IA32_RTIT_CTL:
++		case MSR_IA32_RTIT_STATUS:
++			if (!kvm_x86_ops->pt_supported())
++				continue;
++			break;
++		case MSR_IA32_RTIT_CR3_MATCH:
++			if (!kvm_x86_ops->pt_supported() ||
++			    !intel_pt_validate_hw_cap(PT_CAP_cr3_filtering))
++				continue;
++			break;
++		case MSR_IA32_RTIT_OUTPUT_BASE:
++		case MSR_IA32_RTIT_OUTPUT_MASK:
++			if (!kvm_x86_ops->pt_supported() ||
++				(!intel_pt_validate_hw_cap(PT_CAP_topa_output) &&
++				 !intel_pt_validate_hw_cap(PT_CAP_single_range_output)))
++				continue;
++			break;
++		case MSR_IA32_RTIT_ADDR0_A ... MSR_IA32_RTIT_ADDR3_B: {
++			if (!kvm_x86_ops->pt_supported() ||
++				msrs_to_save[i] - MSR_IA32_RTIT_ADDR0_A >=
++				intel_pt_validate_hw_cap(PT_CAP_num_address_ranges) * 2)
++				continue;
++			break;
++		}
+ 		default:
+ 			break;
+ 		}
+
+From patchwork Wed Oct 24 08:05:15 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654373
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 63F8613B5
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:10 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 517922A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:10 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 45E672A208; Wed, 24 Oct 2018 08:08:10 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id E08612A16E
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:09 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1729405AbeJXQfL (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:35:11 -0400
+Received: from mga05.intel.com ([192.55.52.43]:46033 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728013AbeJXQfK (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:35:10 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:08:08 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987503"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:08:03 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org,
+        Chao Peng <chao.p.peng@linux.intel.com>,
+        Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 11/12] KVM: x86: Set intercept for Intel PT MSRs
+ read/write
+Date: Wed, 24 Oct 2018 16:05:15 +0800
+Message-Id: <1540368316-12998-12-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+From: Chao Peng <chao.p.peng@linux.intel.com>
+
+To save performance overhead, disable intercept Intel PT MSRs
+read/write when Intel PT is enabled in guest.
+MSR_IA32_RTIT_CTL is an exception that will always be intercepted.
+
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/kvm/vmx.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index a568d49..ed247dd 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1333,6 +1333,7 @@ static bool nested_vmx_is_page_fault_vmexit(struct vmcs12 *vmcs12,
+ static void vmx_update_msr_bitmap(struct kvm_vcpu *vcpu);
+ static void __always_inline vmx_disable_intercept_for_msr(unsigned long *msr_bitmap,
+ 							  u32 msr, int type);
++static void pt_set_intercept_for_msr(struct vcpu_vmx *vmx, bool flag);
+ 
+ static DEFINE_PER_CPU(struct vmcs *, vmxarea);
+ static DEFINE_PER_CPU(struct vmcs *, current_vmcs);
+@@ -4558,6 +4559,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 			vmx_rtit_ctl_check(vcpu, data))
+ 			return 1;
+ 		vmcs_write64(GUEST_IA32_RTIT_CTL, data);
++		pt_set_intercept_for_msr(vmx, !(data & RTIT_CTL_TRACEEN));
+ 		vmx->pt_desc.guest.ctl = data;
+ 		break;
+ 	case MSR_IA32_RTIT_STATUS:
+@@ -6414,6 +6416,27 @@ static void vmx_update_msr_bitmap(struct kvm_vcpu *vcpu)
+ 	vmx->msr_bitmap_mode = mode;
+ }
+ 
++static void pt_set_intercept_for_msr(struct vcpu_vmx *vmx, bool flag)
++{
++	unsigned long *msr_bitmap = vmx->vmcs01.msr_bitmap;
++	u32 i;
++
++	vmx_set_intercept_for_msr(msr_bitmap, MSR_IA32_RTIT_STATUS,
++							MSR_TYPE_RW, flag);
++	vmx_set_intercept_for_msr(msr_bitmap, MSR_IA32_RTIT_OUTPUT_BASE,
++							MSR_TYPE_RW, flag);
++	vmx_set_intercept_for_msr(msr_bitmap, MSR_IA32_RTIT_OUTPUT_MASK,
++							MSR_TYPE_RW, flag);
++	vmx_set_intercept_for_msr(msr_bitmap, MSR_IA32_RTIT_CR3_MATCH,
++							MSR_TYPE_RW, flag);
++	for (i = 0; i < vmx->pt_desc.addr_range; i++) {
++		vmx_set_intercept_for_msr(msr_bitmap,
++			MSR_IA32_RTIT_ADDR0_A + i * 2, MSR_TYPE_RW, flag);
++		vmx_set_intercept_for_msr(msr_bitmap,
++			MSR_IA32_RTIT_ADDR0_B + i * 2, MSR_TYPE_RW, flag);
++	}
++}
++
+ static bool vmx_get_enable_apicv(struct kvm_vcpu *vcpu)
+ {
+ 	return enable_apicv;
+
+From patchwork Wed Oct 24 08:05:16 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Kang, Luwei" <luwei.kang@intel.com>
+X-Patchwork-Id: 10654375
+Return-Path: <kvm-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 9226414BB
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:22 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 7EF6D29745
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:22 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 7241529E9B; Wed, 24 Oct 2018 08:08:22 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.9 required=2.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	RCVD_IN_DNSWL_HI autolearn=ham version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2327229745
+	for <patchwork-kvm@patchwork.kernel.org>;
+ Wed, 24 Oct 2018 08:08:22 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1729672AbeJXQfS (ORCPT
+        <rfc822;patchwork-kvm@patchwork.kernel.org>);
+        Wed, 24 Oct 2018 12:35:18 -0400
+Received: from mga06.intel.com ([134.134.136.31]:43358 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729637AbeJXQfR (ORCPT <rfc822;kvm@vger.kernel.org>);
+        Wed, 24 Oct 2018 12:35:17 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2018 01:08:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,419,1534834800";
+   d="scan'208";a="273987528"
+Received: from skx-d.bj.intel.com ([10.238.135.53])
+  by fmsmga005.fm.intel.com with ESMTP; 24 Oct 2018 01:08:09 -0700
+From: Luwei Kang <luwei.kang@intel.com>
+To: kvm@vger.kernel.org, x86@kernel.org
+Cc: tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        pbonzini@redhat.com, rkrcmar@redhat.com, joro@8bytes.org,
+        songliubraving@fb.com, peterz@infradead.org,
+        alexander.shishkin@linux.intel.com, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, thomas.lendacky@amd.com,
+        konrad.wilk@oracle.com, mattst88@gmail.com,
+        Janakarajan.Natarajan@amd.com, dwmw@amazon.co.uk,
+        jpoimboe@redhat.com, marcorr@google.com, ubizjak@gmail.com,
+        sean.j.christopherson@intel.com, jmattson@google.com,
+        linux-kernel@vger.kernel.org, Luwei Kang <luwei.kang@intel.com>
+Subject: [PATCH v13 12/12] KVM: x86: Disable Intel PT when VMXON in L1 guest
+Date: Wed, 24 Oct 2018 16:05:16 +0800
+Message-Id: <1540368316-12998-13-git-send-email-luwei.kang@intel.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+References: <1540368316-12998-1-git-send-email-luwei.kang@intel.com>
+Sender: kvm-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <kvm.vger.kernel.org>
+X-Mailing-List: kvm@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Currently, Intel Processor Trace do not support tracing in L1 guest
+VMX operation(IA32_VMX_MISC[bit 14] is 0). As mentioned in SDM,
+on these type of processors, execution of the VMXON instruction will
+clears IA32_RTIT_CTL.TraceEn and any attempt to write IA32_RTIT_CTL
+causes a general-protection exception (#GP).
+
+Signed-off-by: Luwei Kang <luwei.kang@intel.com>
+---
+ arch/x86/kvm/vmx.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index ed247dd..5001049 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -4556,7 +4556,8 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 		break;
+ 	case MSR_IA32_RTIT_CTL:
+ 		if ((pt_mode != PT_MODE_HOST_GUEST) ||
+-			vmx_rtit_ctl_check(vcpu, data))
++			vmx_rtit_ctl_check(vcpu, data) ||
++			vmx->nested.vmxon)
+ 			return 1;
+ 		vmcs_write64(GUEST_IA32_RTIT_CTL, data);
+ 		pt_set_intercept_for_msr(vmx, !(data & RTIT_CTL_TRACEEN));
+@@ -8760,6 +8761,11 @@ static int handle_vmon(struct kvm_vcpu *vcpu)
+ 	if (ret)
+ 		return ret;
+ 
++	if (pt_mode == PT_MODE_HOST_GUEST) {
++		vmx->pt_desc.guest.ctl = 0;
++		pt_set_intercept_for_msr(vmx, 1);
++	}
++
+ 	return nested_vmx_succeed(vcpu);
+ }
+ 
